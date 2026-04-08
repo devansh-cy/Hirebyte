@@ -1,0 +1,14 @@
+# Protect backend logic
+backend/
+
+# Protect core config
+frontend/src/config/
+frontend/src/context/AuthContext.tsx
+
+# Protect routing structure
+frontend/src/App.tsx
+
+# Protect dependencies
+package.json
+package-lock.json
+requirements.txt

@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Backgrounds */
+    --bg-void:        #080808;   /* deepest black — body background */
+    --bg-panel:       #111111;   /* card and panel background */
+    --bg-surface:     #1A1A1A;   /* elevated surfaces, inputs */
+    --bg-overlay:     #0D0D0D;   /* modal and drawer backgrounds */
+
+    /* Gold Accent System */
+    --gold-primary:   #C9A84C;   /* main gold — buttons, highlights */
+    --gold-light:     #E2C06A;   /* lighter gold — hover states */
+    --gold-dim:       #8A6F2E;   /* muted gold — secondary accents */
+    --gold-glow:      rgba(201, 168, 76, 0.25);  /* glow effect color */
+    --gold-subtle:    rgba(201, 168, 76, 0.08);  /* very faint gold tint for card bg */
+
+    /* Text */
+    --text-primary:   #FAF8F2;   /* warm ivory white — headings */
+    --text-secondary: #A89880;   /* warm muted — body text */
+    --text-muted:     #5A5040;   /* very muted — labels, placeholders */
+
+    /* Borders */
+    --border-subtle:  rgba(201, 168, 76, 0.12);  /* default panel borders */
+    --border-active:  rgba(201, 168, 76, 0.45);  /* hover/focus borders */
+    --border-dim:     rgba(255, 255, 255, 0.06); /* structural dividers */
+
+    /* Status Colors */
+    --status-green:   #4ADE80;   /* operational / success */
+    --status-red:     #F87171;   /* error / end interview */
+    --status-amber:   #FCD34D;   /* warning / medium priority */
+
+    --radius: 1rem;
+  }
+
+  /* Accessibility Defaults */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-void text-muted font-body antialiased selection:bg-gold/30 selection:text-ivory;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* Noise Overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='1'/></svg>");
+    background-size: 200px 200px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading tracking-tight text-[var(--text-primary)];
+  }
+}
+
+@layer components {
+  /* Glassmorphism Standard */
+  .glass-panel {
+    background: rgba(17, 17, 17, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(201, 168, 76, 0.12);
+    box-shadow: 
+      0 0 40px rgba(201, 168, 76, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  /* Gold Glow Standard */
+  .gold-glow {
+    box-shadow: 
+      0 0 20px rgba(201, 168, 76, 0.25),
+      0 0 60px rgba(201, 168, 76, 0.08),
+      0 4px 24px rgba(0, 0, 0, 0.6);
+  }
+
+  .glass-card {
+    @apply bg-panel/70 backdrop-blur-xl border border-gold/10 hover:border-gold/30 transition-all duration-300 rounded-2xl;
+    box-shadow: 0 0 30px rgba(201, 168, 76, 0.05);
+  }
+
+  .glass-button {
+    @apply bg-gold hover:bg-gold-light text-void font-semibold transition-all shadow-[0_0_20px_rgba(201,168,76,0.3)] hover:shadow-[0_0_40px_rgba(201,168,76,0.5)];
+  }
+
+  .glass-button-ghost {
+    @apply border border-gold text-gold hover:bg-gold/10 font-semibold transition-all;
+  }
+
+  /* Form Elements */
+  .input-field {
+    background: rgba(17, 17, 17, 0.8);
+    border: 1px solid rgba(201, 168, 76, 0.12);
+    @apply rounded-2xl px-4 py-3 text-ivory font-mono placeholder-[#5A5040] focus:border-gold/40 outline-none transition-all focus:shadow-[0_0_16px_rgba(201,168,76,0.08)];
+  }
+
+  /* Custom Scrollbar - matching new theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-void);
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface rounded-full hover:bg-gold/50;
+  }
+}
+
+@layer utilities {
+  .text-glow {
+    text-shadow:
+      0 0 20px rgba(201, 168, 76, 0.5),
+      0 0 10px rgba(201, 168, 76, 0.3);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Radar Chart Customization */
+.recharts-polar-grid-angle line {
+  stroke: rgba(201, 168, 76, 0.1);
+}
+.recharts-polar-grid-concentric circle {
+  stroke: rgba(201, 168, 76, 0.1);
+}
+.recharts-polar-grid-concentric-polygon polygon {
+  stroke: rgba(201, 168, 76, 0.1);
+}
