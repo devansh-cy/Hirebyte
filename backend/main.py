@@ -128,9 +128,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        # Remove server identification
-        response.headers.pop("server", None)
-        response.headers.pop("X-Powered-By", None)
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)

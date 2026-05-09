@@ -60,7 +60,7 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8 text-sm font-heading font-semibold text-muted">
+        <div className="hidden md:flex items-center gap-8 text-base font-heading font-semibold text-muted">
           <a href="#features" className="hover:text-gold transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-gold transition-colors">How It Works</a>
           <a href="#analytics" className="hover:text-gold transition-colors">Analytics</a>
@@ -72,7 +72,7 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
           <button 
             ref={ctaRef}
             onClick={onLoginClick}
-            className="hidden md:flex items-center justify-center bg-gold text-void hover:bg-gold-light hover:scale-105 transition-all duration-300 px-6 py-2 rounded-full font-heading font-semibold text-sm tracking-wide shadow-[0_0_20px_rgba(201,168,76,0.2)]"
+            className="hidden md:flex items-center justify-center bg-gold text-void hover:bg-gold-light hover:scale-105 transition-all duration-300 px-6 py-2 rounded-full font-heading font-semibold text-base tracking-wide shadow-[0_0_20px_rgba(201,168,76,0.2)]"
           >
             Start Practicing
           </button>
