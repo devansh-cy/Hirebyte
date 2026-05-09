@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, WebSocket
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, WebSocket, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from config.database import init_db, close_db
 from services.interview_services import InterviewService
 from models.interview_schema import InterviewReport
@@ -18,6 +19,13 @@ from services.report_generator import generate_report
 from services.logic_validator import validate_logic
 from services.speech_analyzer import analyze_speech_confidence
 from services.weakness_engine import calculate_weakness_scores, detect_repeated_patterns, classify_topics
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    HAS_RATE_LIMITER = True
+except ImportError:
+    HAS_RATE_LIMITER = False
 import asyncio
 import threading
 import json
@@ -25,11 +33,48 @@ import base64
 import time
 import traceback
 import os
+import logging
+import re
+from typing import List, Dict
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# ── Logging (structured, never expose to client) ──
+logger = logging.getLogger("hirebyte")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+logger.addHandler(handler)
+
+# ── Validate required secrets exist ──
+_openai_key = os.getenv("OPENAI_API_KEY")
+if not _openai_key:
+    logger.warning("OPENAI_API_KEY is not set — AI features will be unavailable")
+client = AsyncOpenAI(api_key=_openai_key)
+
+# ── Constants ──
+MAX_UPLOAD_SIZE_MB = 10
+MAX_UPLOAD_SIZE_BYTES = MAX_UPLOAD_SIZE_MB * 1024 * 1024
+ALLOWED_UPLOAD_MIMES = {"application/pdf"}
+
+# ── Security: LLM prompt injection sanitizer ──
+def sanitize_llm_input(text: str, max_length: int = 10000) -> str:
+    """Strip known prompt-injection patterns and enforce length limits."""
+    if not text:
+        return ""
+    text = text[:max_length]
+    # Remove common injection patterns
+    injection_patterns = [
+        r"ignore\s+(all\s+)?(previous|above|prior)\s+(instructions|prompts|rules)",
+        r"you\s+are\s+now\s+(a|an|the)",
+        r"system\s*:\s*",
+        r"<\|.*?\|>",
+    ]
+    for pattern in injection_patterns:
+        text = re.sub(pattern, "[filtered]", text, flags=re.IGNORECASE)
+    return text.strip()
 
 # Lifespan context manager with error handling
 @asynccontextmanager
@@ -60,16 +105,50 @@ app = FastAPI(
     title="HireByte API",
     description="Mock Interview Platform API",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    # Security: disable docs in production if needed
+    # docs_url=None, redoc_url=None,
 )
 
-# CORS middleware
+# ── Rate Limiting (Rule #2) ──
+if HAS_RATE_LIMITER:
+    limiter = Limiter(key_func=get_remote_address)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    logger.info("[OK] Rate limiting enabled (slowapi)")
+else:
+    limiter = None
+    logger.warning("[WARN] slowapi not installed — rate limiting disabled. Run: pip install slowapi")
+
+# ── Security Headers Middleware (Rule #7) ──
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        # Remove server identification
+        response.headers.pop("server", None)
+        response.headers.pop("X-Powered-By", None)
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# ── CORS (Rule #6 — no wildcard in production) ──
+_default_origins = [
+    "http://localhost:5173", "http://localhost:3000", "http://localhost:9000",
+    "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://127.0.0.1:9000",
+]
+_env_origins = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in _env_origins.split(",") if o.strip()] if _env_origins else _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:9000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://127.0.0.1:9000"],  # Update for production
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Global camera state
@@ -89,13 +168,22 @@ session_data = {
     "answer_scores": []          # Stores per-answer evaluation scores
 }
 
+# ── Pydantic models with strict validation (Rule #3) ──
 class HintRequest(BaseModel):
-    question: str
-    level: str = "medium"  # small, medium, or full
+    question: str = Field(..., min_length=1, max_length=5000)
+    level: str = Field(default="medium", pattern="^(small|medium|full)$")
 
 class TopicInterviewRequest(BaseModel):
     topic: str  # AI_ML, DSA, or WEB_DEV
-    difficulty: str = "medium"  # easy, medium, or hard
+    difficulty: str = Field(default="medium", pattern="^(easy|medium|hard)$")
+
+    @field_validator("topic")
+    @classmethod
+    def validate_topic(cls, v: str) -> str:
+        valid = {"AI_ML", "DSA", "WEB_DEV"}
+        if v not in valid:
+            raise ValueError(f"topic must be one of {valid}")
+        return v
 
 # Health check endpoints
 @app.get("/")
@@ -161,8 +249,24 @@ async def get_interview_hint(request: HintRequest):
     }
 
 @app.post("/upload-resume")
-async def upload_resume(file: UploadFile = File(...), job_description: str = Form(...)):
+async def upload_resume(request: Request, file: UploadFile = File(...), job_description: str = Form(...)):
+    # ── File Upload Security (Rule #8) ──
+    # Validate MIME type
+    if file.content_type not in ALLOWED_UPLOAD_MIMES:
+        raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
+    # Validate file extension
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="File must have a .pdf extension.")
+    
     pdf_bytes = await file.read()
+    
+    # Validate file size
+    if len(pdf_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail=f"File too large. Maximum size is {MAX_UPLOAD_SIZE_MB}MB.")
+    
+    # Sanitize job description input
+    job_description = sanitize_llm_input(job_description, max_length=3000)
+    
     text = extract_text_from_pdf(pdf_bytes)
     session_data["resume_text"] = text
     session_data["job_description"] = job_description
@@ -555,9 +659,9 @@ async def download_session_pdf():
             headers={"Content-Disposition": "attachment; filename=interview_report.pdf"}
         )
     except Exception as e:
-        print(f"Error generating PDF: {e}")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error generating PDF: {e}", exc_info=True)
+        # Rule #9: Never return stack traces or internal details to client
+        raise HTTPException(status_code=500, detail="Failed to generate PDF report. Please try again.")
 
 
 
@@ -839,8 +943,9 @@ async def save_current_session(request: SaveSessionRequest):
         
         return {"interview_id": interview_id, "message": "Session saved successfully"}
     except Exception as e:
-        print(f"Error saving session: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error saving session: {e}", exc_info=True)
+        # Rule #9: Generic error to client
+        raise HTTPException(status_code=500, detail="Failed to save session. Please try again.")
 
 @app.get("/api/session/hint-status")
 async def get_hint_status():

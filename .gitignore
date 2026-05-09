@@ -1,4 +1,12 @@
 
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+backend/.env
+
 # Python
 __pycache__/
 *.py[cod]
@@ -23,7 +31,6 @@ wheels/
 *.egg
 venv/
 .venv/
-.env
 
 # Node
 node_modules/
@@ -34,3 +41,10 @@ yarn-error.log
 # IDE
 .vscode/
 .idea/
+
+# Uploaded files (never commit user uploads)
+uploads/
+temp_*.wav
+
+# OS
+Thumbs.db
