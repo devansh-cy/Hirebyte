@@ -726,105 +726,8 @@ async def get_historical_analytics(interview_id: str):
             "overall_depth": avg_score / 10     # Approximation
         }
         
-    return generate_analytics_response(metrics, transcript, scores_summary)
+    return await generate_analytics_response(metrics, transcript, scores_summary)
 
-def generate_analytics_response(metrics, transcript, scores_summary=None):
-    """Helper to generate analytics response structure from raw data"""
-    # Calculate averages from video metrics
-    if metrics:
-        avg_focus = sum(m["focus"] for m in metrics) / len(metrics)
-        avg_emotion = sum(m["emotion"] for m in metrics) / len(metrics)
-        avg_confidence = sum(m["confidence"] for m in metrics) / len(metrics)
-        avg_stress = sum(m.get("stress", 0) for m in metrics) / len(metrics)
-    else:
-        avg_focus = avg_emotion = avg_confidence = 0
-        avg_stress = 50
-    
-    # Calculate per-question metrics (group by 30-second windows)
-    per_question_metrics = []
-    if metrics:
-        # Group metrics into question-like segments
-        segment_size = max(1, len(metrics) // 5)  # Divide into ~5 segments
-        for i in range(0, len(metrics), segment_size):
-            segment = metrics[i:i+segment_size]
-            if segment:
-                per_question_metrics.append({
-                    "question_index": len(per_question_metrics) + 1,
-                    "eye_contact_percentage": sum(m["focus"] for m in segment) / len(segment),
-                    "confidence": sum(m["confidence"] for m in segment) / len(segment)
-                })
-    
-    # Sentiment trend from transcript (simplified)
-    sentiment_trend = []
-    for entry in transcript:
-        if entry["role"] == "user":
-            # Basic sentiment: positive words = +, negative words = -
-            text = entry["content"].lower()
-            positive_words = ["good", "great", "excellent", "love", "happy", "excited", "confident"]
-            negative_words = ["bad", "difficult", "hard", "nervous", "worried", "afraid", "confused"]
-            pos_count = sum(1 for w in positive_words if w in text)
-            neg_count = sum(1 for w in negative_words if w in text)
-            sentiment = (pos_count - neg_count) / max(1, pos_count + neg_count + 1)
-            sentiment_trend.append(sentiment)
-    
-    # Filler word detection
-    filler_words = ["um", "uh", "like", "you know", "basically", "actually", "literally"]
-    total_fillers = 0
-    filler_counts = {}
-    total_words = 0
-    
-    for entry in transcript:
-        if entry["role"] == "user":
-            words = entry["content"].lower().split()
-            total_words += len(words)
-            for filler in filler_words:
-                count = entry["content"].lower().count(filler)
-                total_fillers += count
-                filler_counts[filler] = filler_counts.get(filler, 0) + count
-    
-    most_common_fillers = sorted(filler_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-    filler_rate = (total_fillers / max(1, total_words)) * 100
-    
-    # Talk-to-listen ratio
-    user_messages = sum(1 for t in transcript if t["role"] == "user")
-    ai_messages = sum(1 for t in transcript if t["role"] == "ai")
-    talk_ratio = user_messages / max(1, ai_messages)
-    
-    # Use answer evaluation to enhance technical_accuracy if available
-    if scores_summary and scores_summary.get("total_questions", 0) > 0:
-        # Scale LLM-evaluated accuracy (1-10) to 0-100 for the radar chart
-        technical_accuracy = scores_summary["overall_accuracy"] * 10
-        communication_score = scores_summary["overall_clarity"] * 10
-    else:
-        technical_accuracy = min(100, avg_confidence + 15)
-        communication_score = min(100, avg_emotion + 20)
-    
-    return {
-        "radar_chart_data": {
-            "technical_accuracy": technical_accuracy,
-            "communication": communication_score,
-            "confidence": avg_confidence,
-            "focus": avg_focus,
-            "emotional_intelligence": avg_emotion
-        },
-        "vision_analytics": {
-            "overall_eye_contact_percentage": avg_focus,
-            "overall_steadiness_percentage": 100 - avg_stress,
-            "per_question_metrics": per_question_metrics
-        },
-        "nlp_report": {
-            "total_filler_count": total_fillers,
-            "filler_rate": filler_rate,
-            "talk_to_listen_ratio": talk_ratio,
-            "most_common_fillers": most_common_fillers,
-            "sentiment_trend": sentiment_trend
-        },
-        "scoring_summary": {
-            "average_score": (avg_focus + avg_emotion + avg_confidence) / 3,
-            "scores_over_time": [m["confidence"] for m in metrics[-10:]] if metrics else []
-        },
-        "answer_evaluation": scores_summary
-    }
 
 
 class RoadmapRequest(BaseModel):
@@ -855,42 +758,6 @@ async def get_audio_brief(request: AudioBriefRequest):
     return {"audio_base64": audio_b64}
 
 
-@app.get("/api/analytics")
-async def get_analytics():
-    """Returns analytics for current active session"""
-    state = session_data.get("interview_state")
-    scores_summary = state.get_scores_summary() if state else None
-    
-    return generate_analytics_response(
-        session_data["video_metrics"],
-        session_data["transcript"],
-        scores_summary
-    )
-
-@app.get("/api/interview/{interview_id}/analytics")
-async def get_historical_analytics(interview_id: str):
-    """Returns analytics for a specific past interview"""
-    interview = await InterviewService.get_interview_by_id(interview_id)
-    if not interview:
-        raise HTTPException(status_code=404, detail="Interview not found")
-        
-    # Extract data from stored report
-    metrics = interview.video_metrics or []
-    transcript = interview.transcript or []
-    
-    # Construct scores summary if possible, or derive
-    scores_summary = None
-    if interview.questions_answers:
-        scores = [qa.semantic_score for qa in interview.questions_answers]
-        avg_score = sum(scores) / len(scores) if scores else 0
-        scores_summary = {
-            "total_questions": len(interview.questions_answers),
-            "overall_accuracy": avg_score / 10, # Converting back to 1-10 scale approximation
-            "overall_clarity": avg_score / 10,  # Approximation
-            "overall_depth": avg_score / 10     # Approximation
-        }
-        
-    return generate_analytics_response(metrics, transcript, scores_summary)
 
 @app.get("/api/user/{user_id}/analytics")
 async def get_user_analytics(user_id: str):
