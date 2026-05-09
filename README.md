@@ -44,12 +44,12 @@ pip install -r requirements.txt
 # Create .env file:
 # OPENAI_API_KEY=your_key
 # ELEVENLABS_API_KEY=your_key
-# VOICE_ID=pNInz6obpgDQGcFmaJgB
+
 
 python main.py
 ```
 
-> Server runs at http://localhost:8000
+
 
 ### 2. Frontend Setup
 
@@ -59,7 +59,7 @@ npm install
 npm run dev
 ```
 
-> App runs at http://localhost:5173
+
 
 ## 📡 API Endpoints
 
