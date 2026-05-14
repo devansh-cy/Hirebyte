@@ -8,8 +8,6 @@ import { SocialProofBar } from '../components/Home/SocialProofBar';
 import { FeaturesSection } from '../components/Home/FeaturesSection';
 import { HowItWorksSection } from '../components/Home/HowItWorksSection';
 import { PhilosophySection } from '../components/Home/PhilosophySection';
-import { StatsSection } from '../components/Home/StatsSection';
-import { TestimonialsSection } from '../components/Home/TestimonialsSection';
 import { FAQSection } from '../components/Home/FAQSection';
 import { FinalCTA } from '../components/Home/FinalCTA';
 import { Footer } from '../components/Layout/Footer';
@@ -40,8 +38,6 @@ export const LandingPage: React.FC = () => {
             <FeaturesSection />
             <HowItWorksSection />
             <PhilosophySection />
-            <StatsSection />
-            <TestimonialsSection />
             <FAQSection />
             <FinalCTA onStart={handleStart} />
             <Footer />
