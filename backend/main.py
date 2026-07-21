@@ -111,8 +111,15 @@ app = FastAPI(
 )
 
 # ── Rate Limiting (Rule #2) ──
+def get_trusted_client_ip(request: Request) -> str:
+    """Resolve original client IP, bypassing load-balancer/proxy IPs."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "127.0.0.1"
+
 if HAS_RATE_LIMITER:
-    limiter = Limiter(key_func=get_remote_address)
+    limiter = Limiter(key_func=get_trusted_client_ip)
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     logger.info("[OK] Rate limiting enabled (slowapi)")
@@ -136,6 +143,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch-all for unhandled server errors, returning clean JSON with logging."""
+    logger.error(f"Global exception: {exc}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error. Please contact support or try again."}
+    )
 
 # ── CORS (Rule #6 — no wildcard in production) ──
 _default_origins = [

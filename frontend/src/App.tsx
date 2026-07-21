@@ -4,7 +4,7 @@ import { Layout } from './components/Layout/Layout';
 import { LoginModal } from './components/Auth/LoginModal';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from './config/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import Lenis from '@studio-freight/lenis';
 import gsap from 'gsap';
 import { CustomCursor } from './components/Layout/CustomCursor';
@@ -12,11 +12,11 @@ import ParticleField from './components/ParticleField';
 import PageLoader from './components/PageLoader';
 import { AnimationProvider } from './context/AnimationContext';
 
-// Pages
-import { LandingPage } from './pages/LandingPage';
-import { SetupPage } from './pages/SetupPage';
-import { InterviewPage } from './pages/InterviewPage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
+// Pages - Lazy loaded for bundle size optimization
+const LandingPage = lazy(() => import('./pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const SetupPage = lazy(() => import('./pages/SetupPage').then(m => ({ default: m.SetupPage })));
+const InterviewPage = lazy(() => import('./pages/InterviewPage').then(m => ({ default: m.InterviewPage })));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 
 // Wrapper for Layout to handle location-based props
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
@@ -108,12 +108,18 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <AppLayout>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/setup" element={<SetupPage />} />
-              <Route path="/interview" element={<InterviewPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-            </Routes>
+            <Suspense fallback={
+              <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6 text-gold/60 font-heading text-xs font-bold uppercase tracking-[0.2em] animate-pulse">
+                Initializing System View...
+              </div>
+            }>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/setup" element={<SetupPage />} />
+                <Route path="/interview" element={<InterviewPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
+              </Routes>
+            </Suspense>
           </AppLayout>
         </BrowserRouter>
       </AuthProvider>
