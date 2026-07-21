@@ -195,7 +195,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
 
         {/* BENTO: Score Breakdown */}
         <div className="md:col-span-4 glass-panel rounded-3xl p-8 border border-gold/10 hover:border-gold/30 transition-all group">
-            <h3 className="font-heading text-[11px] font-bold text-gold uppercase tracking-widest mb-8 flex items-center gap-2 drop-shadow-gold-glow">
+            <h3 className="font-heading text-sm font-bold text-gold uppercase tracking-widest mb-8 flex items-center gap-2 drop-shadow-gold-glow">
               <Zap size={14} className="text-gold animate-pulse" /> Metrics Breakdown
             </h3>
             <div className="space-y-6">
@@ -248,7 +248,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
 
         {/* MIDDLE ROW: Radar & Dynamic Bar Chart */}
         <div className="md:col-span-6 glass-panel rounded-3xl p-8 border border-gold/10 hover:border-gold/30 transition-all">
-          <h3 className="font-heading text-[11px] font-bold text-ivory uppercase tracking-widest mb-8 flex items-center gap-2" style={{ textShadow: '0 0 10px rgba(250,249,246,0.4)'}}>
+          <h3 className="font-heading text-sm font-bold text-ivory uppercase tracking-widest mb-8 flex items-center gap-2" style={{ textShadow: '0 0 10px rgba(250,249,246,0.4)'}}>
             <Target size={14} className="text-ivory" /> Vector Analysis
           </h3>
           <div className="h-72">
@@ -275,7 +275,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
 
         <div className="md:col-span-6 glass-panel rounded-3xl p-8 border border-gold/10 hover:border-gold/30 transition-all">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="font-heading text-[11px] font-bold text-gold uppercase tracking-widest flex items-center gap-2 drop-shadow-gold-glow">
+            <h3 className="font-heading text-sm font-bold text-gold uppercase tracking-widest flex items-center gap-2 drop-shadow-gold-glow">
               <Activity size={14} className="text-gold" /> Event Timeline
             </h3>
             <span className="font-heading text-[10px] font-bold text-muted uppercase tracking-widest border border-white/5 bg-surface/50 px-2 py-1 rounded">Q1 - Q{sessionData.length}</span>
@@ -308,10 +308,10 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
           <div className="relative z-10">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
               <div>
-                <h3 className="font-heading text-2xl font-bold text-ivory flex items-center gap-3 drop-shadow-gold-glow">
+                <h3 className="font-heading text-3xl font-bold text-ivory flex items-center gap-3 drop-shadow-gold-glow">
                   <Sparkles size={24} className="text-gold" /> ✨ Intelligence Synthesis
                 </h3>
-                <p className="font-heading text-[10px] text-muted mt-2 tracking-widest uppercase">Deep reasoning analysis powered by Gemini Flash.</p>
+                <p className="font-heading text-xs text-muted mt-2 tracking-widest uppercase">Deep reasoning analysis powered by Gemini Flash.</p>
               </div>
               <div className="flex gap-4 w-full md:w-auto">
                 <button 
@@ -339,22 +339,22 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                     {feedback && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="glass-panel bg-gold/5 border border-gold/20 p-6 rounded-3xl hover:border-gold/40 transition-colors">
-                                <h4 className="text-gold font-heading font-bold text-xs uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
+                                <h4 className="text-gold font-heading font-bold text-sm uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
                                     <Award size={14} /> Core Strengths
                                 </h4>
-                                <p className="font-body text-sm text-ivory leading-relaxed">{feedback.strengths}</p>
+                                <p className="font-body text-base text-ivory leading-relaxed">{feedback.strengths}</p>
                             </div>
                             <div className="glass-panel bg-status-red/5 border border-status-red/20 p-6 rounded-3xl hover:border-status-red/40 transition-colors">
-                                <h4 className="text-ivory font-heading font-bold text-xs uppercase mb-4 flex items-center gap-2 tracking-widest" style={{ textShadow: '0 0 10px rgba(250,249,246,0.4)' }}>
+                                <h4 className="text-ivory font-heading font-bold text-sm uppercase mb-4 flex items-center gap-2 tracking-widest" style={{ textShadow: '0 0 10px rgba(250,249,246,0.4)' }}>
                                     <AlertCircle size={14} /> Critical Gaps
                                 </h4>
-                                <p className="font-body text-sm text-ivory leading-relaxed">{feedback.gaps}</p>
+                                <p className="font-body text-base text-ivory leading-relaxed">{feedback.gaps}</p>
                             </div>
                             <div className="glass-panel bg-surface/50 border border-white/5 p-6 rounded-3xl hover:border-white/20 transition-colors">
-                                <h4 className="text-gold font-heading font-bold text-xs uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
+                                <h4 className="text-gold font-heading font-bold text-sm uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
                                     <Target size={14} /> Intelligence Advice
                                 </h4>
-                                <p className="font-body text-sm text-ivory/90 leading-relaxed">{feedback.advice}</p>
+                                <p className="font-body text-base text-ivory/90 leading-relaxed">{feedback.advice}</p>
                             </div>
                         </div>
                     )}
@@ -362,27 +362,27 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
 
                 {/* Roadmap Panel */}
                 <div className="md:col-span-4 h-full">
-                    <div className="glass-panel bg-surface/30 border border-gold/10 hover:border-gold/30 transition-colors rounded-3xl p-6 h-full min-h-[200px]">
-                        <h4 className="text-ivory font-heading font-bold text-[11px] uppercase mb-6 flex items-center gap-2 tracking-widest">
+                    <div className="glass-panel bg-surface/30 border border-gold/10 hover:border-gold/30 transition-colors rounded-3xl p-6 h-full min-h-[300px]">
+                        <h4 className="text-ivory font-heading font-bold text-sm uppercase mb-6 flex items-center gap-2 tracking-widest">
                             ✨ Execution Plan
                         </h4>
                         {!roadmap && !isRoadmapping && (
-                            <div className="flex flex-col items-center justify-center h-48 opacity-40 text-gold">
+                            <div className="flex flex-col items-center justify-center h-64 opacity-40 text-gold">
                                 <BookOpen size={32} className="mb-3 animate-pulse" />
-                                <p className="font-heading text-[10px] font-bold tracking-widest uppercase">Awaiting instruction</p>
+                                <p className="font-heading text-xs font-bold tracking-widest uppercase">Awaiting instruction</p>
                             </div>
                         )}
                         {isRoadmapping && (
                             <div className="animate-pulse space-y-4">
-                                {[...Array(5)].map((_, i) => <div key={i} className="h-3 bg-gold/10 rounded w-full border border-gold/5"></div>)}
+                                {[...Array(5)].map((_, i) => <div key={i} className="h-4 bg-gold/10 rounded w-full border border-gold/5"></div>)}
                             </div>
                         )}
                         {roadmap && (
-                            <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
+                            <div className="space-y-6 max-h-[28rem] overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
                                 {Object.entries(roadmap).map(([day, task], i) => (
-                                    <div key={i} className="border-b border-white/5 pb-3 last:border-0 last:pb-0">
-                                        <span className="text-gold font-heading font-bold uppercase tracking-widest text-xs block mb-1.5">{day}</span>
-                                        <p className="font-body text-ivory/90 text-sm leading-relaxed">{task as string}</p>
+                                    <div key={i} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
+                                        <span className="text-gold font-heading font-bold uppercase tracking-widest text-sm block mb-2">{day}</span>
+                                        <p className="font-body text-ivory/95 text-base leading-relaxed">{task as string}</p>
                                     </div>
                                 ))}
                             </div>
