@@ -200,10 +200,10 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
             </h3>
             <div className="space-y-6">
                 {[
-                    { label: 'Technical Accuracy', val: radarMetrics.technical_accuracy || 0, color: '#C9A84C' },
-                    { label: 'Communication', val: radarMetrics.communication || 0, color: '#E8DCC0' },
-                    { label: 'Confidence', val: radarMetrics.confidence || 0, color: '#D4AF37' },
-                    { label: 'Focus & Gaze', val: radarMetrics.focus || 0, color: '#FAF9F6' },
+                    { label: 'Technical Accuracy', val: Math.round(radarMetrics.technical_accuracy || 0), color: '#C9A84C' },
+                    { label: 'Communication', val: Math.round(radarMetrics.communication || 0), color: '#E8DCC0' },
+                    { label: 'Confidence', val: Math.round(radarMetrics.confidence || 0), color: '#D4AF37' },
+                    { label: 'Focus & Gaze', val: Math.round(radarMetrics.focus || 0), color: '#FAF9F6' },
                 ].map((item, i) => (
                     <div key={i} className="space-y-3">
                         <div className="flex justify-between font-heading text-xs font-bold uppercase tracking-widest">

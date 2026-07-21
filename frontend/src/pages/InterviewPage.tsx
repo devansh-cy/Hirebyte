@@ -8,7 +8,6 @@ import { LogicFeedback } from '../components/Interview/LogicFeedback';
 import { SpeechFeedback } from '../components/Interview/SpeechFeedback';
 import { Sparkles, Lightbulb } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
-import { useAuth } from '../context/AuthContext';
 
 export const InterviewPage: React.FC = () => {
     const navigate = useNavigate();
