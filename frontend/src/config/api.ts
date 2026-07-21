@@ -1,13 +1,21 @@
 // API Configuration for HireByte
 // Automatically detects the correct backend URL based on how the frontend is accessed
 
-// Get the current hostname (works for both localhost and network IP)
-// Hardcoded to localhost for debugging
-// Force 127.0.0.1 if localhost to avoid IPv6 resolution issues on Windows
-const currentHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
-const API_BASE_URL = `http://${currentHost}:9000`;
+// Try getting API URL from environment variables, or fallback to dynamic localhost:9000
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.trim();
+  }
+  
+  // Force 127.0.0.1 if localhost to avoid IPv6 resolution issues on Windows
+  const currentHost = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+  return `http://${currentHost}:9000`;
+};
 
-console.log('HireByte API Config (Hardcoded):', {
+const API_BASE_URL = getApiBaseUrl();
+
+console.log('HireByte API Config:', {
   apiUrl: API_BASE_URL,
   originalEnvVar: import.meta.env.VITE_API_URL
 });
@@ -25,8 +33,10 @@ export const API_ENDPOINTS = {
   health: `${API_BASE_URL}/health`,
 };
 
-// WebSocket endpoints - replace http with ws
-const WS_BASE_URL = API_BASE_URL.replace('http', 'ws');
+// WebSocket endpoints - replace http/https with ws/wss dynamically
+const WS_BASE_URL = API_BASE_URL.startsWith('https')
+  ? API_BASE_URL.replace(/^https/, 'wss')
+  : API_BASE_URL.replace(/^http/, 'ws');
 
 export const WS_ENDPOINTS = {
   interview: `${WS_BASE_URL}/ws/interview`,

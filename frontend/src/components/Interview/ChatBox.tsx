@@ -58,6 +58,16 @@ export function ChatBox({ onAISpeakingChange, onUserSpeakingChange, onLogicFeedb
             const speakDuration = Math.max(3000, (data.text.length / 50) * 3000);
             setTimeout(() => onAISpeakingChange?.(false), speakDuration);
           }
+        } else if (data.type === 'ai_audio') {
+          if (data.audio) {
+            setCurrentAudio(data.audio);
+            // Notify parent that AI is speaking
+            onAISpeakingChange?.(true);
+            // Auto-clear after estimated speaking time (3s per 50 chars)
+            const textLength = data.text_length || 100;
+            const speakDuration = Math.max(3000, (textLength / 50) * 3000);
+            setTimeout(() => onAISpeakingChange?.(false), speakDuration);
+          }
         } else if (data.type === 'logic_feedback') {
           // Feature 2: Forward logic feedback to parent
           onLogicFeedback?.({

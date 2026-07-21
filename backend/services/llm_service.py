@@ -71,7 +71,7 @@ BEHAVIOR RULES:
     
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=messages,
             max_tokens=250,
             timeout=15.0
@@ -110,7 +110,7 @@ No explanation, no markdown, just the JSON object."""
 
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "system", "content": eval_prompt}],
             temperature=0.2,
             max_tokens=50,

@@ -63,7 +63,7 @@ Return ONLY valid JSON, no explanation."""
 
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[{"role": "system", "content": validation_prompt}],
             temperature=0.1,
             max_tokens=150

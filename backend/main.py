@@ -117,7 +117,12 @@ if HAS_RATE_LIMITER:
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     logger.info("[OK] Rate limiting enabled (slowapi)")
 else:
-    limiter = None
+    class MockLimiter:
+        def limit(self, *args, **kwargs):
+            def decorator(func):
+                return func
+            return decorator
+    limiter = MockLimiter()
     logger.warning("[WARN] slowapi not installed — rate limiting disabled. Run: pip install slowapi")
 
 # ── Security Headers Middleware (Rule #7) ──
@@ -196,7 +201,8 @@ async def health_check():
     return {"status": "ok", "database": "connected"}
 
 @app.post("/get-hint")
-async def get_interview_hint(request: HintRequest):
+@limiter.limit("60/minute")
+async def get_interview_hint(request: Request, hint_request: HintRequest):
     if not session_data["resume_text"]:
         return {"hint": "Please upload a resume first."}
     
@@ -216,7 +222,7 @@ async def get_interview_hint(request: HintRequest):
         # Use the progressive level instead of requested level
         level = available_level
     else:
-        level = request.level
+        level = hint_request.level
     
     # Feature 1: Detect question topic
     # Use the topic from the interview state (which comes from the plan)
@@ -228,7 +234,7 @@ async def get_interview_hint(request: HintRequest):
     if state:
         state.question_topics[q_index] = topic
     
-    hint = await get_hint(request.question, session_data["resume_text"], 
+    hint = await get_hint(hint_request.question, session_data["resume_text"], 
                           session_data["job_description"], level, topic)
     
     # Record hint usage
@@ -246,6 +252,7 @@ async def get_interview_hint(request: HintRequest):
     }
 
 @app.post("/upload-resume")
+@limiter.limit("30/minute")
 async def upload_resume(request: Request, file: UploadFile = File(...), job_description: str = Form(...)):
     # ── File Upload Security (Rule #8) ──
     # Validate MIME type
@@ -295,19 +302,20 @@ async def upload_resume(request: Request, file: UploadFile = File(...), job_desc
     }
 
 @app.post("/start-topic-interview")
-async def start_topic_interview(request: TopicInterviewRequest):
+@limiter.limit("60/minute")
+async def start_topic_interview(request: Request, topic_request: TopicInterviewRequest):
     """Start a topic-based interview (no resume needed)."""
     valid_topics = ["AI_ML", "DSA", "WEB_DEV"]
-    if request.topic not in valid_topics:
+    if topic_request.topic not in valid_topics:
         raise HTTPException(status_code=400, detail=f"Invalid topic. Must be one of: {valid_topics}")
     
-    difficulty = request.difficulty if request.difficulty in ("easy", "medium", "hard") else "medium"
+    difficulty = topic_request.difficulty if topic_request.difficulty in ("easy", "medium", "hard") else "medium"
     
     # Reset session for topic mode
     session_data["resume_text"] = ""
     session_data["job_description"] = ""
     session_data["difficulty"] = difficulty
-    session_data["interview_topic"] = request.topic
+    session_data["interview_topic"] = topic_request.topic
     session_data["candidate_profile"] = None
     session_data["candidate_summary"] = ""
     session_data["transcript"] = []
@@ -315,28 +323,29 @@ async def start_topic_interview(request: TopicInterviewRequest):
     session_data["answer_scores"] = []
     
     # Generate topic-specific plan (no LLM call needed)
-    plan = generate_topic_plan(request.topic, difficulty)
+    plan = generate_topic_plan(topic_request.topic, difficulty)
     session_data["interview_plan"] = plan
     session_data["interview_state"] = None  # Will be created at WebSocket connect
     
     topic_labels = {"AI_ML": "AI / Machine Learning", "DSA": "Data Structures & Algorithms", "WEB_DEV": "Web Development"}
     
-    print(f"[Topic Interview] Topic: {request.topic}, Difficulty: {difficulty}")
+    print(f"[Topic Interview] Topic: {topic_request.topic}, Difficulty: {difficulty}")
     print(f"[Interview Planner] Plan: {json.dumps(plan, indent=2)[:500]}")
     
     return {
-        "message": f"{topic_labels[request.topic]} interview ready!",
+        "message": f"{topic_labels[topic_request.topic]} interview ready!",
         "interview_plan": {
             "total_questions": plan.get("total_questions", 9),
             "categories": [c["name"] for c in plan.get("categories", [])],
             "difficulty": difficulty,
-            "topic": request.topic,
-            "topic_label": topic_labels[request.topic]
+            "topic": topic_request.topic,
+            "topic_label": topic_labels[topic_request.topic]
         }
     }
 
 @app.post("/transcribe")
-async def transcribe_audio(file: UploadFile = File(...)):
+@limiter.limit("60/minute")
+async def transcribe_audio(request: Request, file: UploadFile = File(...)):
     temp_path = "temp_voice.wav"
     with open(temp_path, "wb") as buffer:
         buffer.write(await file.read())
@@ -369,6 +378,29 @@ async def transcribe_audio(file: UploadFile = File(...)):
 async def interview_websocket(websocket: WebSocket):
     await websocket.accept()
     
+    # WebSocket lock to prevent concurrent write collisions on the websocket
+    websocket_lock = asyncio.Lock()
+    
+    async def safe_send(msg_dict):
+        try:
+            async with websocket_lock:
+                await websocket.send_json(msg_dict)
+        except Exception as send_err:
+            logger.error(f"Error sending WebSocket message: {send_err}")
+
+    async def send_tts_audio_task(text_content):
+        try:
+            audio_bytes = await generate_audio(text_content)
+            if audio_bytes:
+                audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
+                await safe_send({
+                    "type": "ai_audio",
+                    "audio": audio_b64,
+                    "text_length": len(text_content)
+                })
+        except Exception as tts_err:
+            logger.error(f"Error in background TTS task: {tts_err}")
+
     chat_history = []
     
     # Initialize interview state from the plan
@@ -405,14 +437,15 @@ async def interview_websocket(websocket: WebSocket):
         chat_history.append({"role": "assistant", "content": response_text})
         session_data["transcript"].append({"role": "ai", "content": response_text})
         
-        audio_bytes = generate_audio(response_text)
-        audio_b64 = base64.b64encode(audio_bytes).decode('utf-8') if audio_bytes else None
-        
-        await websocket.send_json({
+        # Send text immediately to frontend
+        await safe_send({
             "type": "ai_turn",
             "text": response_text,
-            "audio": audio_b64
+            "audio": None
         })
+        
+        # Start TTS in background
+        asyncio.create_task(send_tts_audio_task(response_text))
 
     # 2. Conversation Loop with plan tracking + answer evaluation
     try:
@@ -482,14 +515,15 @@ async def interview_websocket(websocket: WebSocket):
                     chat_history.append({"role": "assistant", "content": ai_reply})
                     session_data["transcript"].append({"role": "ai", "content": ai_reply})
                     
-                    audio_bytes = generate_audio(ai_reply)
-                    audio_b64 = base64.b64encode(audio_bytes).decode('utf-8') if audio_bytes else None
-                    
-                    await websocket.send_json({
+                    # Send AI response text immediately
+                    await safe_send({
                         "type": "ai_turn",
                         "text": ai_reply,
-                        "audio": audio_b64
+                        "audio": None
                     })
+                    
+                    # Start TTS generation in the background
+                    asyncio.create_task(send_tts_audio_task(ai_reply))
 
                     # Process evaluation results in background (or await them now without blocking UI)
                     if eval_task and logic_task:
@@ -523,7 +557,7 @@ async def interview_websocket(websocket: WebSocket):
                                     severity=logic_result["severity"]
                                 )
                                 # Send logic feedback asynchronously
-                                await websocket.send_json({
+                                await safe_send({
                                     "type": "logic_feedback",
                                     "issue_type": logic_result["issue_type"],
                                     "feedback": logic_result["feedback"],
@@ -546,7 +580,7 @@ async def interview_websocket(websocket: WebSocket):
                         )
                         
                         if speech_analysis["confidence_level"] != "high" or speech_analysis["long_silence"]:
-                            await websocket.send_json({
+                            await safe_send({
                                 "type": "speech_feedback",
                                 "wpm": speech_analysis["wpm"],
                                 "pace": speech_analysis["pace"],
@@ -571,7 +605,7 @@ async def interview_websocket(websocket: WebSocket):
                     print(f"Error processing message: {processing_error}")
                     traceback.print_exc()
                     # Send a fallback message to keep the UI alive
-                    await websocket.send_json({
+                    await safe_send({
                         "type": "ai_turn",
                         "text": "I'm having a little trouble processing that. Could you say it again?",
                         "audio": None
@@ -836,21 +870,23 @@ class RoadmapRequest(BaseModel):
     weak_topics: list = []
 
 @app.post("/api/roadmap")
-async def get_roadmap(request: RoadmapRequest):
+@limiter.limit("60/minute")
+async def get_roadmap(request: Request, roadmap_request: RoadmapRequest):
     """Generate a 7-day study roadmap based on weak areas."""
-    roadmap = await generate_study_roadmap(request.focus_area, request.weak_topics)
+    roadmap = await generate_study_roadmap(roadmap_request.focus_area, roadmap_request.weak_topics)
     return roadmap
 
 class AudioBriefRequest(BaseModel):
     text: str
 
 @app.post("/api/audio-brief")
-async def get_audio_brief(request: AudioBriefRequest):
+@limiter.limit("60/minute")
+async def get_audio_brief(request: Request, audio_request: AudioBriefRequest):
     """Generate audio briefing from text."""
-    if not request.text:
+    if not audio_request.text:
         raise HTTPException(status_code=400, detail="Text is required")
         
-    audio_bytes = generate_tts_audio(request.text)
+    audio_bytes = await generate_tts_audio(audio_request.text)
     if not audio_bytes:
         raise HTTPException(status_code=500, detail="Audio generation failed")
     
@@ -923,7 +959,8 @@ class SaveSessionRequest(BaseModel):
     user_id: str
 
 @app.post("/api/session/save")
-async def save_current_session(request: SaveSessionRequest):
+@limiter.limit("60/minute")
+async def save_current_session(request: Request, save_request: SaveSessionRequest):
     """
     Generates a full report from the current in-memory session 
     and saves it to the database for the given user_id.
@@ -933,7 +970,7 @@ async def save_current_session(request: SaveSessionRequest):
          
     try:
         # Generate the report object
-        report = generate_report(session_data, request.user_id)
+        report = generate_report(session_data, save_request.user_id)
         
         # Save to DB
         interview_id = await InterviewService.save_interview(report)

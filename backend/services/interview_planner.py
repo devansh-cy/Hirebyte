@@ -58,7 +58,7 @@ async def generate_interview_plan(profile: dict, job_description: str) -> dict:
     
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": PLAN_PROMPT},
                 {
