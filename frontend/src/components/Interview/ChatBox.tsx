@@ -187,7 +187,7 @@ export function ChatBox({ onAISpeakingChange, onUserSpeakingChange, onLogicFeedb
       <div className="flex flex-1 min-h-0">
         {/* Chat Area */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth chat-scroll">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth chat-scroll" data-lenis-prevent>
             {messages.length === 0 && (
               <div className="flex items-center justify-center h-full opacity-30 text-center text-sm font-body text-ivory">
                 AI conversation will appear here...

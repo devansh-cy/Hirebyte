@@ -378,7 +378,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                             </div>
                         )}
                         {roadmap && (
-                            <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                            <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
                                 {Object.entries(roadmap).map(([day, task], i) => (
                                     <div key={i} className="border-b border-white/5 pb-3 last:border-0 last:pb-0">
                                         <span className="text-gold font-heading font-bold uppercase tracking-widest text-[9px] block mb-1.5">{day}</span>

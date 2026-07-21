@@ -32,7 +32,7 @@ export function RecentActivityModal({ isOpen, onClose, interviews }: RecentActiv
         onClick={onClose}
       />
 
-      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-slate-900 shadow-2xl z-50 transform transition-transform duration-300 ease-out overflow-y-auto border-l border-slate-800">
+      <div className="fixed inset-y-0 right-0 w-full max-w-md bg-slate-900 shadow-2xl z-50 transform transition-transform duration-300 ease-out overflow-y-auto border-l border-slate-800" data-lenis-prevent>
         <div className="sticky top-0 bg-slate-900 border-b border-slate-800 p-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-100">Recent Activity</h2>
           <button

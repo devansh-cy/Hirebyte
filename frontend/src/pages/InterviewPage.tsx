@@ -106,7 +106,7 @@ export const InterviewPage: React.FC = () => {
 
                 {/* Left Panel: Context & Inputs */}
                 <Panel id="left-panel" defaultSize="25" minSize="20" maxSize="40" className="mr-2">
-                    <div className="h-full flex flex-col gap-4 glass-panel glow-panel rounded-2xl p-4 overflow-y-auto relative z-10 border-gold/20">
+                    <div className="h-full flex flex-col gap-4 glass-panel glow-panel rounded-2xl p-4 overflow-y-auto relative z-10 border-gold/20" data-lenis-prevent>
                         <div className="mb-4">
                             <h3 className="font-display font-bold text-lg flex items-center gap-2 mb-1 text-ivory">
                                 <Sparkles size={18} className="text-gold animate-pulse" />
@@ -125,7 +125,7 @@ export const InterviewPage: React.FC = () => {
 
                         <div className="p-4 bg-surface/50 rounded-xl text-sm border border-gold/10 flex-1 overflow-hidden flex flex-col">
                             <span className="font-heading text-xs font-bold text-muted uppercase tracking-widest block mb-2">Target Profile</span>
-                            <p className="font-body text-[#7A6A53] text-xs leading-relaxed overflow-y-auto whitespace-pre-wrap flex-1 scroll-smooth">
+                            <p className="font-body text-[#7A6A53] text-xs leading-relaxed overflow-y-auto whitespace-pre-wrap flex-1 scroll-smooth" data-lenis-prevent>
                                 {jobDescription || "No target profile provided."}
                             </p>
                         </div>
