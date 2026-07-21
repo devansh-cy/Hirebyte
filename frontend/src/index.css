@@ -44,7 +44,7 @@
   }
 
   body {
-    @apply bg-void text-muted font-body antialiased selection:bg-gold/30 selection:text-ivory;
+    @apply bg-void text-ivory font-body subpixel-antialiased selection:bg-gold/30 selection:text-ivory;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -75,13 +75,18 @@
 @layer components {
   /* Glassmorphism Standard */
   .glass-panel {
-    background: rgba(17, 17, 17, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(201, 168, 76, 0.12);
+    background: rgba(17, 17, 17, 0.88); /* Increased opacity for high contrast readable text */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(201, 168, 76, 0.16);
     box-shadow: 
       0 0 40px rgba(201, 168, 76, 0.04),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    /* GPU compositing layers fix for blurry subpixel fonts */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   /* Gold Glow Standard */
@@ -93,8 +98,13 @@
   }
 
   .glass-card {
-    @apply bg-panel/70 backdrop-blur-xl border border-gold/10 hover:border-gold/30 transition-all duration-300 rounded-2xl;
+    @apply bg-panel/90 backdrop-blur-md border border-gold/20 hover:border-gold/35 transition-all duration-300 rounded-2xl;
     box-shadow: 0 0 30px rgba(201, 168, 76, 0.05);
+    /* GPU compositing layers fix for blurry subpixel fonts */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .glass-button {

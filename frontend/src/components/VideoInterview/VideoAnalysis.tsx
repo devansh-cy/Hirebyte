@@ -175,7 +175,7 @@ export const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
                                 </div>
                                 <div className="flex flex-col flex-1">
                                     <p className="font-heading text-sm font-bold text-ivory tracking-widest uppercase">AI Speaking</p>
-                                    <p className="font-body text-xs text-[#7A6A53]">Analyzing current trajectory...</p>
+                                    <p className="font-body text-xs text-ivory/80">Analyzing current trajectory...</p>
                                 </div>
                             </div>
                         ) : isUserSpeaking ? (
@@ -185,7 +185,7 @@ export const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
                                 </div>
                                 <div className="flex flex-col flex-1">
                                     <p className="font-heading text-sm font-bold text-ivory tracking-widest uppercase">Sensors Active</p>
-                                    <p className="font-body text-xs text-[#7A6A53]">Maintaining steady input stream.</p>
+                                    <p className="font-body text-xs text-ivory/80">Maintaining steady input stream.</p>
                                 </div>
                             </div>
                         ) : (
@@ -197,7 +197,7 @@ export const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
                                     <p className="font-heading text-base font-bold text-ivory tracking-widest">
                                         {currentHint ? "SYS.OVERRIDE" : "AWAITING INPUT"}
                                     </p>
-                                    <p className="font-body text-xs text-[#7A6A53] leading-snug">
+                                    <p className="font-body text-xs text-ivory/85 leading-snug">
                                         {currentHint || "Mic is primed. Send audio response when ready."}
                                     </p>
                                 </div>

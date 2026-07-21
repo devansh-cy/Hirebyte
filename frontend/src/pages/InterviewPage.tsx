@@ -124,8 +124,8 @@ export const InterviewPage: React.FC = () => {
                         </div>
 
                         <div className="p-4 bg-surface/50 rounded-xl text-sm border border-gold/10 flex-1 overflow-hidden flex flex-col">
-                            <span className="font-heading text-xs font-bold text-muted uppercase tracking-widest block mb-2">Target Profile</span>
-                            <p className="font-body text-[#7A6A53] text-xs leading-relaxed overflow-y-auto whitespace-pre-wrap flex-1 scroll-smooth" data-lenis-prevent>
+                            <span className="font-heading text-xs font-bold text-gold uppercase tracking-widest block mb-2">Target Profile</span>
+                            <p className="font-body text-ivory/80 text-sm leading-relaxed overflow-y-auto whitespace-pre-wrap flex-1 scroll-smooth" data-lenis-prevent>
                                 {jobDescription || "No target profile provided."}
                             </p>
                         </div>

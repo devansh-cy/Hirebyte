@@ -206,8 +206,8 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                     { label: 'Focus & Gaze', val: radarMetrics.focus || 0, color: '#FAF9F6' },
                 ].map((item, i) => (
                     <div key={i} className="space-y-3">
-                        <div className="flex justify-between font-heading text-[10px] font-bold uppercase tracking-widest">
-                            <span className="text-muted">{item.label}</span>
+                        <div className="flex justify-between font-heading text-xs font-bold uppercase tracking-widest">
+                            <span className="text-ivory/80">{item.label}</span>
                             <span className="text-ivory" style={{ color: item.color, textShadow: `0 0 10px ${item.color}40` }}>{item.val}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-surface/50 rounded-full overflow-hidden shadow-inner">
@@ -224,24 +224,24 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                 <div className="glass-panel rounded-3xl p-6 flex flex-col items-center justify-center text-center border-gold/10 hover:border-gold/30 transition-all">
                     <Eye className="text-ivory mb-3" size={24} />
                     <span className="text-3xl font-heading font-bold text-ivory mb-1" style={{ textShadow: '0 0 15px rgba(250, 249, 246, 0.4)' }}>{Math.round(radarMetrics.focus || 0)}%</span>
-                    <span className="font-heading text-[9px] text-muted font-bold uppercase tracking-widest">Eye Contact</span>
+                    <span className="font-heading text-xs text-ivory/70 font-bold uppercase tracking-widest">Eye Contact</span>
                 </div>
                 <div className="glass-panel rounded-3xl p-6 flex flex-col items-center justify-center text-center border-gold/10 hover:border-gold/30 transition-all">
                     <Award className="text-gold mb-3" size={24} />
                     <span className="text-3xl font-heading font-bold text-ivory mb-1 drop-shadow-gold-glow">{Math.round(radarMetrics.confidence || 0)}%</span>
-                    <span className="font-heading text-[9px] text-muted font-bold uppercase tracking-widest">Confidence</span>
+                    <span className="font-heading text-xs text-gold/80 font-bold uppercase tracking-widest">Confidence</span>
                 </div>
             </div>
             
             <div className="glass-panel rounded-3xl p-6 flex-1 border-gold/10 hover:border-gold/30 transition-all">
-                <h4 className="font-heading text-[10px] font-bold text-muted uppercase tracking-widest mb-5">Frequent Disruptions</h4>
+                <h4 className="font-heading text-xs font-bold text-ivory/80 uppercase tracking-widest mb-5">Frequent Disruptions</h4>
                 <div className="flex flex-wrap gap-2">
                     {fillerWords.length > 0 ? fillerWords.map((f: any, i: number) => (
                         <div key={i} className="flex items-center gap-2 bg-surface/50 border border-gold/10 px-3 py-1.5 rounded-lg group hover:border-gold/40 transition-colors">
-                            <span className="font-heading text-xs font-bold text-muted group-hover:text-ivory">"{f.word}"</span>
-                            <span className="font-heading text-[10px] bg-gold/10 text-gold px-2 py-0.5 rounded border border-gold/20">{f.count}</span>
+                            <span className="font-heading text-xs font-bold text-ivory/90 group-hover:text-ivory">"{f.word}"</span>
+                            <span className="font-heading text-xs bg-gold/10 text-gold px-2 py-0.5 rounded border border-gold/20">{f.count}</span>
                         </div>
-                    )) : <span className="font-heading text-xs text-muted italic">Clear communication detected.</span>}
+                    )) : <span className="font-heading text-xs text-ivory/60 italic">Clear communication detected.</span>}
                 </div>
             </div>
         </div>
@@ -339,22 +339,22 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                     {feedback && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="glass-panel bg-gold/5 border border-gold/20 p-6 rounded-3xl hover:border-gold/40 transition-colors">
-                                <h4 className="text-gold font-heading font-bold text-[10px] uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
+                                <h4 className="text-gold font-heading font-bold text-xs uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
                                     <Award size={14} /> Core Strengths
                                 </h4>
                                 <p className="font-body text-sm text-ivory leading-relaxed">{feedback.strengths}</p>
                             </div>
                             <div className="glass-panel bg-status-red/5 border border-status-red/20 p-6 rounded-3xl hover:border-status-red/40 transition-colors">
-                                <h4 className="text-ivory font-heading font-bold text-[10px] uppercase mb-4 flex items-center gap-2 tracking-widest" style={{ textShadow: '0 0 10px rgba(250,249,246,0.4)' }}>
+                                <h4 className="text-ivory font-heading font-bold text-xs uppercase mb-4 flex items-center gap-2 tracking-widest" style={{ textShadow: '0 0 10px rgba(250,249,246,0.4)' }}>
                                     <AlertCircle size={14} /> Critical Gaps
                                 </h4>
                                 <p className="font-body text-sm text-ivory leading-relaxed">{feedback.gaps}</p>
                             </div>
                             <div className="glass-panel bg-surface/50 border border-white/5 p-6 rounded-3xl hover:border-white/20 transition-colors">
-                                <h4 className="text-muted font-heading font-bold text-[10px] uppercase mb-4 flex items-center gap-2 tracking-widest">
+                                <h4 className="text-gold font-heading font-bold text-xs uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
                                     <Target size={14} /> Intelligence Advice
                                 </h4>
-                                <p className="font-body text-sm text-muted leading-relaxed">{feedback.advice}</p>
+                                <p className="font-body text-sm text-ivory/90 leading-relaxed">{feedback.advice}</p>
                             </div>
                         </div>
                     )}
@@ -381,8 +381,8 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                             <div className="space-y-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
                                 {Object.entries(roadmap).map(([day, task], i) => (
                                     <div key={i} className="border-b border-white/5 pb-3 last:border-0 last:pb-0">
-                                        <span className="text-gold font-heading font-bold uppercase tracking-widest text-[9px] block mb-1.5">{day}</span>
-                                        <p className="font-body text-muted text-xs leading-relaxed">{task as string}</p>
+                                        <span className="text-gold font-heading font-bold uppercase tracking-widest text-xs block mb-1.5">{day}</span>
+                                        <p className="font-body text-ivory/90 text-sm leading-relaxed">{task as string}</p>
                                     </div>
                                 ))}
                             </div>
