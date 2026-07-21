@@ -337,7 +337,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
                     )}
 
                     {feedback && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                             <div className="glass-panel bg-gold/5 border border-gold/20 p-6 rounded-3xl hover:border-gold/40 transition-colors">
                                 <h4 className="text-gold font-heading font-bold text-sm uppercase mb-4 flex items-center gap-2 tracking-widest drop-shadow-gold-glow">
                                     <Award size={14} /> Core Strengths
@@ -362,23 +362,23 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
 
                 {/* Roadmap Panel */}
                 <div className="md:col-span-4 h-full">
-                    <div className="glass-panel bg-surface/30 border border-gold/10 hover:border-gold/30 transition-colors rounded-3xl p-6 h-full min-h-[300px]">
+                    <div className="glass-panel bg-surface/30 border border-gold/10 hover:border-gold/30 transition-colors rounded-3xl p-6 h-full min-h-[300px] flex flex-col">
                         <h4 className="text-ivory font-heading font-bold text-sm uppercase mb-6 flex items-center gap-2 tracking-widest">
                             ✨ Execution Plan
                         </h4>
                         {!roadmap && !isRoadmapping && (
-                            <div className="flex flex-col items-center justify-center h-64 opacity-40 text-gold">
+                            <div className="flex flex-col items-center justify-center flex-1 opacity-40 text-gold">
                                 <BookOpen size={32} className="mb-3 animate-pulse" />
                                 <p className="font-heading text-xs font-bold tracking-widest uppercase">Awaiting instruction</p>
                             </div>
                         )}
                         {isRoadmapping && (
-                            <div className="animate-pulse space-y-4">
+                            <div className="animate-pulse space-y-4 flex-1">
                                 {[...Array(5)].map((_, i) => <div key={i} className="h-4 bg-gold/10 rounded w-full border border-gold/5"></div>)}
                             </div>
                         )}
                         {roadmap && (
-                            <div className="space-y-6 max-h-[28rem] overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
+                            <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar" data-lenis-prevent>
                                 {Object.entries(roadmap).map(([day, task], i) => (
                                     <div key={i} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
                                         <span className="text-gold font-heading font-bold uppercase tracking-widest text-sm block mb-2">{day}</span>
