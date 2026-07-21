@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
