@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useAnimation } from '../../context/AnimationContext';
-import gsap from 'gsap';
 
 export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,8 +14,6 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Magnetic Button Effect
 
 
   return (
