@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { 
   Activity, Target, MessageSquare, Award, 
-  Eye, Zap, Download, ChevronLeft, Sparkles, AlertCircle, BookOpen
+  Eye, Zap, ChevronLeft, Sparkles, AlertCircle, BookOpen
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api'; 
 
@@ -120,11 +120,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
           </h1>
           <p className="text-muted font-heading text-[10px] uppercase tracking-widest">✨ Powered by Gemini Intelligence</p>
         </div>
-        <div className="flex gap-4">
-          <button className="glass-button bg-gold hover:bg-gold/90 text-void px-6 py-3 rounded-full font-heading text-xs font-bold tracking-widest uppercase flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(201,168,76,0.3)] hover:shadow-[0_0_30px_rgba(201,168,76,0.5)]">
-            <Download size={16} /> Export Data
-          </button>
-        </div>
+
       </div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
