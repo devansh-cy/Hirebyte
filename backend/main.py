@@ -183,7 +183,8 @@ session_data = {
     "interview_state": None,     # InterviewState tracker instance
     "transcript": [],            # Stores {"role": "user"|"ai", "content": "..."}
     "video_metrics": [],         # Stores {"timestamp": float, "focus": int, "emotion": int, "confidence": int}
-    "answer_scores": []          # Stores per-answer evaluation scores
+    "answer_scores": [],         # Stores per-answer evaluation scores
+    "cached_analytics": None     # Cached analytics response to speed up page loads/refreshes
 }
 
 # ── Pydantic models with strict validation (Rule #3) ──
@@ -293,6 +294,7 @@ async def upload_resume(request: Request, file: UploadFile = File(...), job_desc
     session_data["transcript"] = []
     session_data["video_metrics"] = []
     session_data["answer_scores"] = []
+    session_data["cached_analytics"] = None
     
     # Structured resume analysis (runs once at upload)
     profile = await analyze_resume(text, job_description)
@@ -337,6 +339,7 @@ async def start_topic_interview(request: Request, topic_request: TopicInterviewR
     session_data["transcript"] = []
     session_data["video_metrics"] = []
     session_data["answer_scores"] = []
+    session_data["cached_analytics"] = None
     
     # Generate topic-specific plan (no LLM call needed)
     plan = generate_topic_plan(topic_request.topic, difficulty)
@@ -831,16 +834,25 @@ async def generate_analytics_response(metrics, transcript, scores_summary=None, 
 async def get_analytics():
     """Returns analytics for current active session"""
     try:
+        # Check if we have cached analytics to prevent redundant LLM calls on refresh
+        if "cached_analytics" in session_data and session_data["cached_analytics"]:
+            print("[INFO] Returning cached analytics")
+            return session_data["cached_analytics"]
+
         state = session_data.get("interview_state")
         scores_summary = state.get_scores_summary() if state else None
         
-        return await generate_analytics_response(
+        analytics_res = await generate_analytics_response(
             session_data.get("video_metrics", []),
             session_data.get("transcript", []),
             scores_summary,
             session_data.get("candidate_summary", ""),
             session_data.get("job_description", "")
         )
+        
+        # Cache the result
+        session_data["cached_analytics"] = analytics_res
+        return analytics_res
     except Exception as e:
         print(f"Analytics Generation Error: {e}")
         traceback.print_exc()
