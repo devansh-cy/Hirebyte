@@ -7,7 +7,6 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { showContent } = useAnimation();
-  const ctaRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,29 +17,7 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
   }, []);
 
   // Magnetic Button Effect
-  useEffect(() => {
-    const el = ctaRef.current;
-    if (!el) return;
-    
-    const onMouseMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      gsap.to(el, { x: x * 0.25, y: y * 0.25, duration: 0.4, ease: 'power2.out' });
-    };
-    
-    const onMouseLeave = () => {
-      gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.4)' });
-    };
 
-    el.addEventListener('mousemove', onMouseMove);
-    el.addEventListener('mouseleave', onMouseLeave);
-    
-    return () => {
-      el.removeEventListener('mousemove', onMouseMove);
-      el.removeEventListener('mouseleave', onMouseLeave);
-    };
-  }, []);
 
   return (
     <>
@@ -69,13 +46,6 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <button 
-            ref={ctaRef}
-            onClick={onLoginClick}
-            className="hidden md:flex items-center justify-center bg-gold text-void hover:bg-gold-light hover:scale-105 transition-all duration-300 px-6 py-2 rounded-full font-heading font-semibold text-base tracking-wide shadow-[0_0_20px_rgba(201,168,76,0.2)]"
-          >
-            Start Practicing
-          </button>
           <button
             className="md:hidden text-gold p-2 hover:bg-gold/10 rounded-full transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -93,12 +63,6 @@ export const Navbar = ({ onLoginClick }: { onLoginClick: () => void }) => {
             <a href="#how-it-works" onClick={() => setIsMenuOpen(false)}>How It Works</a>
             <a href="#analytics" onClick={() => setIsMenuOpen(false)}>Analytics</a>
             <a href="#pricing" onClick={() => setIsMenuOpen(false)}>Pricing</a>
-            <button 
-              onClick={() => { setIsMenuOpen(false); onLoginClick(); }}
-              className="bg-gold text-void px-8 py-3 rounded-full font-heading font-semibold mt-4 shadow-[0_0_20px_rgba(201,168,76,0.2)]"
-            >
-              START PRACTICING
-            </button>
           </div>
         </div>
       )}
