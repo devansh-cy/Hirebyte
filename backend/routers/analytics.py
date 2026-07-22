@@ -12,7 +12,7 @@ from config.limiter import limiter
 from services.interview_services import InterviewService
 from services.pdf_service import generate_interview_pdf
 from services.llm_service import generate_interview_feedback, generate_study_roadmap
-from services.tts_service import generate_audio as generate_tts_audio
+
 from services.report_generator import generate_report
 from services.weakness_engine import calculate_weakness_scores, classify_topics
 
@@ -230,22 +230,7 @@ async def get_roadmap(request: Request, roadmap_request: RoadmapRequest):
     roadmap = await generate_study_roadmap(roadmap_request.focus_area, roadmap_request.weak_topics)
     return roadmap
 
-class AudioBriefRequest(BaseModel):
-    text: str
 
-@router.post("/api/audio-brief")
-@limiter.limit("60/minute")
-async def get_audio_brief(request: Request, audio_request: AudioBriefRequest):
-    """Generate audio briefing from text."""
-    if not audio_request.text:
-        raise HTTPException(status_code=400, detail="Text is required")
-        
-    audio_bytes = await generate_tts_audio(audio_request.text)
-    if not audio_bytes:
-        raise HTTPException(status_code=500, detail="Audio generation failed")
-    
-    audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
-    return {"audio_base64": audio_b64}
 
 @router.get("/api/user/{user_id}/analytics")
 async def get_user_analytics(user_id: str):

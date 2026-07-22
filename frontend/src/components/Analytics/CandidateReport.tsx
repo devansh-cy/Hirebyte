@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, 
@@ -6,18 +6,16 @@ import {
 } from 'recharts';
 import { 
   Activity, Target, MessageSquare, Award, 
-  Eye, Zap, Download, ChevronLeft, Sparkles, AlertCircle, Volume2, BookOpen
+  Eye, Zap, Download, ChevronLeft, Sparkles, AlertCircle, BookOpen
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../../config/api'; 
 
 export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
-  const [isBriefing, setIsBriefing] = useState(false);
   const [isRoadmapping, setIsRoadmapping] = useState(false);
   // Feedback now comes initially from backend, but can be refreshed/augmented
   const [feedback, setFeedback] = useState<any>(null);
   const [roadmap, setRoadmap] = useState<any>(null);
   const [score, setScore] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Parse Data from Backend
   const visionMetrics = analyticsData?.vision_analytics || {};
@@ -102,38 +100,7 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
     }
   };
 
-  // ✨ BACKEND: AI Audio Briefing (TTS)
-  const playAudioBriefing = async () => {
-    if (!feedback) return;
-    setIsBriefing(true);
-    
-    const textToSay = `Here is your interview summary. Great job on ${feedback.strengths}. I noticed some gaps in ${feedback.gaps}. My advice is to ${feedback.advice}. Keep up the good work!`;
 
-    const baseUrl = API_ENDPOINTS.analytics ? API_ENDPOINTS.analytics.split('/api')[0] : '';
-
-    try {
-      const response = await fetch(`${baseUrl}/api/audio-brief`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: textToSay })
-      });
-
-      if (response.ok) {
-          const data = await response.json();
-          // Backend returns base64 audio
-          const audioSrc = `data:audio/mp3;base64,${data.audio_base64}`;
-          
-          if (audioRef.current) {
-            audioRef.current.src = audioSrc;
-            audioRef.current.play();
-            audioRef.current.onended = () => setIsBriefing(false);
-          }
-      }
-    } catch (error) {
-      console.error("TTS Error:", error);
-      setIsBriefing(false);
-    }
-  };
 
   if (!analyticsData) {
       return <div className="text-center text-slate-500 p-10">Loading Analytics...</div>;
@@ -141,7 +108,6 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
 
   return (
     <div className="bg-void text-ivory font-body p-4 md:p-8 relative overflow-hidden">
-      <audio ref={audioRef} className="hidden" />
 
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
@@ -155,14 +121,6 @@ export function CandidateReport({ analyticsData }: { analyticsData?: any }) {
           <p className="text-muted font-heading text-[10px] uppercase tracking-widest">✨ Powered by Gemini Intelligence</p>
         </div>
         <div className="flex gap-4">
-          <button 
-            onClick={playAudioBriefing}
-            disabled={!feedback || isBriefing}
-            className={`px-6 py-3 rounded-full font-heading text-xs font-bold tracking-widest uppercase flex items-center gap-2 transition-all ${!feedback ? 'bg-surface/50 text-muted border border-gold/5 cursor-not-allowed' : 'glass-button bg-panel border-gold/20 text-gold hover:bg-gold/10 hover:shadow-gold-glow'}`}
-          >
-            <Volume2 size={16} className={isBriefing ? 'animate-pulse text-gold' : ''} />
-            {isBriefing ? 'Synthesizing...' : 'Audio Brief'}
-          </button>
           <button className="glass-button bg-gold hover:bg-gold/90 text-void px-6 py-3 rounded-full font-heading text-xs font-bold tracking-widest uppercase flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(201,168,76,0.3)] hover:shadow-[0_0_30px_rgba(201,168,76,0.5)]">
             <Download size={16} /> Export Data
           </button>
