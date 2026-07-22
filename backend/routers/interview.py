@@ -228,19 +228,6 @@ async def interview_websocket(websocket: WebSocket):
         except Exception as send_err:
             logger.error(f"Error sending WebSocket message: {send_err}")
 
-    async def send_tts_audio_task(text_content):
-        try:
-            audio_bytes = await generate_audio(text_content)
-            if audio_bytes:
-                audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
-                await safe_send({
-                    "type": "ai_audio",
-                    "audio": audio_b64,
-                    "text_length": len(text_content)
-                })
-        except Exception as tts_err:
-            logger.error(f"Error in background TTS task: {tts_err}")
-
     chat_history = []
     
     plan = session_data.get("interview_plan")
@@ -271,13 +258,19 @@ async def interview_websocket(websocket: WebSocket):
         chat_history.append({"role": "assistant", "content": response_text})
         session_data["transcript"].append({"role": "ai", "content": response_text})
         
+        # Generate TTS audio first to sync playback with text pop-up
+        try:
+            audio_bytes = await generate_audio(response_text)
+            audio_b64 = base64.b64encode(audio_bytes).decode('utf-8') if audio_bytes else None
+        except Exception as tts_err:
+            logger.error(f"Error generating intro audio: {tts_err}")
+            audio_b64 = None
+
         await safe_send({
             "type": "ai_turn",
             "text": response_text,
-            "audio": None
+            "audio": audio_b64
         })
-        
-        asyncio.create_task(send_tts_audio_task(response_text))
 
     try:
         while True:
@@ -338,13 +331,19 @@ async def interview_websocket(websocket: WebSocket):
                     chat_history.append({"role": "assistant", "content": ai_reply})
                     session_data["transcript"].append({"role": "ai", "content": ai_reply})
                     
+                    # Generate TTS audio first to sync playback with text pop-up
+                    try:
+                        audio_bytes = await generate_audio(ai_reply)
+                        audio_b64 = base64.b64encode(audio_bytes).decode('utf-8') if audio_bytes else None
+                    except Exception as tts_err:
+                        logger.error(f"Error generating turn audio: {tts_err}")
+                        audio_b64 = None
+
                     await safe_send({
                         "type": "ai_turn",
                         "text": ai_reply,
-                        "audio": None
+                        "audio": audio_b64
                     })
-                    
-                    asyncio.create_task(send_tts_audio_task(ai_reply))
 
                     if eval_task and logic_task:
                         try:
