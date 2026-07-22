@@ -61,22 +61,6 @@ npm run dev
 
 
 
-## 📡 API Endpoints
 
-| Endpoint                  | Method    | Description                           |
-| ------------------------- | --------- | ------------------------------------- |
-| `/upload-resume`          | POST      | Upload resume PDF and job description |
-| `/transcribe`             | POST      | Transcribe audio to text              |
-| `/ws/interview`           | WebSocket | Main interview conversation           |
-| `/ws/metrics`             | WebSocket | Real-time vision metrics              |
-| `/api/stream`             | GET       | MJPEG video stream                    |
-| `/api/analytics`          | GET       | Full interview analytics              |
-| `/api/analytics/feedback` | POST      | AI-generated feedback                 |
-| `/health`                 | GET       | Health check                          |
-
-## 🎨 Brand Colors
-
-- **Tech Blue**: `#003366`
-- **Mint Green**: `#2ECC71`
 
 
