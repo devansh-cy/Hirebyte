@@ -110,9 +110,9 @@ export const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
         }
     }, []);
 
-    // Send frames every 100ms (10 FPS) for analysis
+    // Send frames every 1000ms (1 FPS) for analysis
     React.useEffect(() => {
-        const frameInterval = setInterval(captureFrame, 100);
+        const frameInterval = setInterval(captureFrame, 1000);
         return () => clearInterval(frameInterval);
     }, [captureFrame]);
 
@@ -131,6 +131,8 @@ export const VideoAnalysis: React.FC<VideoAnalysisProps> = ({
                     ref={webcamRef}
                     audio={false}
                     screenshotFormat="image/jpeg"
+                    screenshotWidth={320}
+                    screenshotHeight={240}
                     videoConstraints={{
                         width: 1280,
                         height: 720,
