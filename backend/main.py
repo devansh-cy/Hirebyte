@@ -372,7 +372,7 @@ async def transcribe_audio(request: Request, file: UploadFile = File(...)):
                 model="whisper-1", 
                 file=audio_file,
                 language="en", # Forces English to stop the Korean hallucinations
-                prompt="Technical interview conversation about software development." # Contextual hint
+                prompt="Technical interview conversation about software development. Um, well, I think we should, uh, basically discuss the solution, you know?" # Hint to keep filler words/disfluencies
             )
         
         # Filter out "hallucinations" (very short or nonsense noise)
